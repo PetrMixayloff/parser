@@ -15,6 +15,7 @@ SQLAlchemy = "^1.4.15"
 lxml = "^4.6.3"
 bs4 = "^0.0.1"
 celery = "^5.0.5"
+pydantic = {extras = ["dotenv"], version = "^1.8.2"}
 
 [tool.poetry.dev-dependencies]
 
