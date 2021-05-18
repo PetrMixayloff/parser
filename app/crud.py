@@ -1,10 +1,10 @@
 from typing import Optional
-from .models import ParseResults
+from app.models import ParseResults
 from sqlalchemy.orm import Session
 
 
-def save_result(db: Session, result: dict):
-    result = ParseResults(**result)
+def save_result(db: Session, obj: dict):
+    result = ParseResults(**obj)
     db.add(result)
     db.commit()
 
