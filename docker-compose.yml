@@ -1,0 +1,35 @@
+version: '3.7'
+
+services:
+  db:
+    image: postgres:13-alpine
+    environment:
+      - POSTGRES_DB=parser_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=supersecretpassword
+    ports:
+      - "6543:5432"
+  queue:
+    image: rabbitmq:latest
+  backend:
+    depends_on:
+      - db
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    command: uvicorn app.main:app --reload --workers 1 --host 127.0.0.1 --port 8000
+    volumes:
+      - ./:/backend/
+    env_file:
+      - ./.env
+    ports:
+      - 8002:8000
+  celeryworker:
+    build: .
+    command: celery -A app.worker.celery_app worker --loglevel=INFO -c 1
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - queue
+      - backend
