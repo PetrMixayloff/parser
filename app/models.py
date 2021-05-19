@@ -14,4 +14,4 @@ class ParseResults(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, nullable=False)
     url = Column(String(255), index=True, nullable=False, comment='url для парсинга')
     date = Column(DateTime, nullable=False, comment='Дата парсинга url')
-    result = Column(String(255), nullable=False, comment='Результат парсинга')
+    result = Column(String(), nullable=False, comment='Результат парсинга')

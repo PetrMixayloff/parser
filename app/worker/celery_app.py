@@ -1,8 +1,6 @@
 from celery import Celery
 
 
-celery_app = Celery("worker", broker="amqp://guest:guest@localhost:5672/")
-
-celery_app.conf.task_routes = {"app.worker.celery_worker.parse_task": "main-queue"}
-
-celery_app.conf.update(task_track_started=True)
+celery_app = Celery("worker",
+                    broker="amqp://guest:guest@0.0.0.0:5672//",
+                    include=['app.worker.tasks'])
