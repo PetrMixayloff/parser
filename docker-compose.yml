@@ -5,8 +5,8 @@ services:
     image: postgres:13-alpine
     environment:
       - POSTGRES_DB=parser_db
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=supersecretpassword
+      - POSTGRES_USER=parser_user
+      - POSTGRES_PASSWORD=parser_pass
     ports:
       - "6543:5432"
   queue:
@@ -16,20 +16,17 @@ services:
       - db
     build:
       context: ./
-      dockerfile: Dockerfile
-    command: uvicorn app.main:app --reload --workers 1 --host 127.0.0.1 --port 8000
+      dockerfile: app.dockerfile
+    command: sh -c "ls -a && alembic upgrade head && uvicorn app.main:app --reload --workers 1 --host 0.0.0.0 --port 80"
     volumes:
       - ./:/backend/
-    env_file:
-      - ./.env
     ports:
-      - 8002:8000
+      - 80:80
   celeryworker:
-    build: .
-    command: celery -A app.worker.celery_app worker --loglevel=INFO -c 1
-    env_file:
-      - .env
+    build:
+      context: ./
+      dockerfile: celeryworker.dockerfile
+    command: sh -c "ls -a && celery -A app.worker.celery_app worker --loglevel=INFO -c 1"
     depends_on:
       - db
       - queue
-      - backend
