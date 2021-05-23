@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <!-- import CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <!-- Load required Bootstrap and BootstrapVue CSS -->
+    <link type="text/css" rel="stylesheet" href="//unpkg.com/bootstrap/dist/css/bootstrap.min.css"/>
+    <link type="text/css" rel="stylesheet" href="//unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.min.css"/>
+
+</head>
+<body style="margin: 0; padding: 0;">
+<div id="app" style="height: 100%; margin: 0; padding: 0;">
+    <div style="margin: 10px auto">
+        <h2>Парсинг тест клиент</h2>
+    </div>
+    <div style="display: flex;
+    justify-content: start;
+    align-items: center;">
+        <h3>Введите url для парсинга</h3>
+        <el-input placeholder="example.com" v-model="taskURL"></el-input>
+        <el-button
+                type="success"
+                @click="createParseTask">
+            Парсить
+        </el-button>
+    </div>
+</div>
+</body>
+<!-- Load Vue-->
+<script src="//unpkg.com/vue@latest/dist/vue.min.js"></script>
+
+<!-- import JavaScript -->
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+<script src="https://unpkg.com/element-ui@2.15.1/lib/umd/locale/ru-RU.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.0/axios.js"></script>
+<script>
+    ELEMENT.lang.ruRU.el.pagination.pagesize = ' на стр.'
+    ELEMENT.locale(ELEMENT.lang.ruRU)
+    new Vue({
+        el: '#app',
+        data: function () {
+            return {
+                taskURL: '',
+                tableDataLoading: true,
+                tableData: [],
+                search: '',
+                currentPage: 1,
+                currentPageSize: 10,
+                total: 0,
+                currentRow: {
+                    id: null,
+                    creator_id: null,
+                    creator_name: null,
+                    name: '',
+                    text: '',
+                    company_id: null,
+                    creation_date: null,
+                    image: null
+                },
+                base_api: 'http://0.0.0.0/api'
+            }
+        },
+        methods: {
+            formatDate(date) {
+                const year = date.getFullYear()
+                const month = date.getMonth() < 10 ? '0' + (date.getMonth() + 1) : date.getMonth()
+                const date_ = date.getDate() < 10 ? '0' + date.getDate() : date.getDate()
+                const hours = date.getHours() < 10 ? '0' + date.getHours() : date.getHours();
+                const minutes = date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes();
+                return (date_ + "." + month + "." + year + ", " + hours + ":" + minutes) // 25.02.2020, 22:52
+            },
+            async getTableData() {
+                this.tableDataLoading = true
+                const resp = await axios.get(`${this.base_api}/results/`,
+                    {
+                        params: {skip: (this.currentPage - 1) * this.currentPageSize, take: this.currentPageSize}
+                    })
+                this.tableData = resp.data.data
+                this.total = resp.data.total
+                this.tableDataLoading = false
+            },
+            async handleSizeChange(val) {
+                this.currentPageSize = val;
+                await this.getTableData()
+            },
+            async handleCurrentPageChange(val) {
+                this.currentPage = val
+                await this.getTableData()
+            },
+            async createParseTask() {
+                const resp = await axios.post(`${this.base_api}/parse/${this.taskURL}`)
+                console.log(resp)
+            },
+            onRowClick(row, column, event) {
+                //
+            }
+        },
+        async mounted() {
+            await this.getTableData()
+        }
+    })
+</script>
+</html>
