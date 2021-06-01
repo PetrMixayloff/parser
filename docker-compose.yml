@@ -17,7 +17,7 @@ services:
     build:
       context: ./
       dockerfile: app.dockerfile
-    command: sh -c "ls -a && alembic upgrade head && uvicorn app.main:app --reload --workers 1 --host 0.0.0.0 --port 80"
+    command: sh -c "alembic upgrade head && uvicorn app.main:app --reload --workers 1 --host 0.0.0.0 --port 80"
     volumes:
       - ./:/backend/
     ports:
@@ -26,7 +26,7 @@ services:
     build:
       context: ./
       dockerfile: celeryworker.dockerfile
-    command: sh -c "ls -a && celery -A app.worker.celery_app worker --loglevel=INFO -c 1"
+    command: sh -c "celery -A app.worker.celery_app worker --loglevel=INFO -c 1"
     depends_on:
       - db
       - queue

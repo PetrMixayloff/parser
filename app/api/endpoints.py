@@ -3,11 +3,19 @@ from app.worker.tasks import parse_task
 from .session import get_db
 from sqlalchemy.orm import Session
 from app.crud import get_result_by_id
+from fastapi.responses import HTMLResponse
 
 api_router = APIRouter()
 
 
-@api_router.post("/parse/{url}",
+@api_router.get("/", response_class=HTMLResponse)
+def get_ui():
+    with open('app/index.html', 'r') as file:
+        html = file.read()
+        return html
+
+
+@api_router.post("/api/parse/{url}",
                  responses={
                      200: {
                          "description": "Добавление нового URL в задания для парсинга",
@@ -22,7 +30,7 @@ def receive_task(url: str = Path(..., example="example.com")) -> str:
     return req.id
 
 
-@api_router.get("/results/{result_id}",
+@api_router.get("/api/results/{result_id}",
                 responses={
                     200: {
                         "description": "Получение результата парсинга по идентификатору",

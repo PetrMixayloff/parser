@@ -10,21 +10,50 @@
 
 </head>
 <body style="margin: 0; padding: 0;">
-<div id="app" style="height: 100%; margin: 0; padding: 0;">
-    <div style="margin: 10px auto">
-        <h2>Парсинг тест клиент</h2>
-    </div>
+<div id="app" style="height: 100%; margin: 20px 30px; padding: 0;">
+    <h2 style="text-align: center">Парсинг тест клиент</h2>
+    <br/>
+    <hr/>
+    <h4>Введите url для парсинга</h4>
     <div style="display: flex;
     justify-content: start;
-    align-items: center;">
-        <h3>Введите url для парсинга</h3>
+    align-items: center;
+    max-width: 300px;">
         <el-input placeholder="example.com" v-model="taskURL"></el-input>
         <el-button
+                style="margin-left: 20px"
                 type="success"
                 @click="createParseTask">
             Парсить
         </el-button>
     </div>
+    <br/>
+    <hr/>
+    <h4>Введите id для получения результата парсинга</h4>
+    <div style="display: flex;
+    justify-content: start;
+    align-items: center;
+    max-width: 300px;">
+        <el-input label="Введите id для получения результата парсинга"
+                  placeholder="eda3fb71-9d39-4902-bb5f-d1e2f18d5583"
+                  v-model="taskId"></el-input>
+        <el-button
+                style="margin-left: 20px"
+                type="success"
+                @click="getTaskResult">
+            Отправить
+        </el-button>
+    </div>
+    <el-dialog
+            :title="popupTitle"
+            :visible.sync="popupVisible"
+            width="30%"
+            @closed="popupClose">
+        <span> {{ popupMessage }}</span>
+        <span slot="footer" class="dialog-footer">
+    <el-button type="primary" @click="popupVisible = false">Закрыть</el-button>
+  </span>
+    </el-dialog>
 </div>
 </body>
 <!-- Load Vue-->
@@ -42,62 +71,43 @@
         data: function () {
             return {
                 taskURL: '',
-                tableDataLoading: true,
-                tableData: [],
-                search: '',
-                currentPage: 1,
-                currentPageSize: 10,
-                total: 0,
-                currentRow: {
-                    id: null,
-                    creator_id: null,
-                    creator_name: null,
-                    name: '',
-                    text: '',
-                    company_id: null,
-                    creation_date: null,
-                    image: null
-                },
+                taskId: '',
+                popupVisible: false,
+                popupTitle: '',
+                popupMessage: '',
                 base_api: 'http://0.0.0.0/api'
             }
         },
         methods: {
-            formatDate(date) {
-                const year = date.getFullYear()
-                const month = date.getMonth() < 10 ? '0' + (date.getMonth() + 1) : date.getMonth()
-                const date_ = date.getDate() < 10 ? '0' + date.getDate() : date.getDate()
-                const hours = date.getHours() < 10 ? '0' + date.getHours() : date.getHours();
-                const minutes = date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes();
-                return (date_ + "." + month + "." + year + ", " + hours + ":" + minutes) // 25.02.2020, 22:52
-            },
-            async getTableData() {
-                this.tableDataLoading = true
-                const resp = await axios.get(`${this.base_api}/results/`,
-                    {
-                        params: {skip: (this.currentPage - 1) * this.currentPageSize, take: this.currentPageSize}
-                    })
-                this.tableData = resp.data.data
-                this.total = resp.data.total
-                this.tableDataLoading = false
-            },
-            async handleSizeChange(val) {
-                this.currentPageSize = val;
-                await this.getTableData()
-            },
-            async handleCurrentPageChange(val) {
-                this.currentPage = val
-                await this.getTableData()
-            },
             async createParseTask() {
                 const resp = await axios.post(`${this.base_api}/parse/${this.taskURL}`)
-                console.log(resp)
+                if (resp.status === 200) {
+                    this.popupTitle = 'Успех!'
+                    this.popupMessage = `Задание успешно отправлено. Результат можно получит по id "${resp.data}"`
+                } else {
+                    this.popupTitle = 'Ошибка'
+                    this.popupMessage = 'При создании задания произошла ошибка. Проверьте правильность введенного url'
+                }
+                this.popupVisible = true
+            },
+            async getTaskResult() {
+                const resp = await axios.get(`${this.base_api}/results/${this.taskId}`)
+                if (resp.status === 200) {
+                    this.popupTitle = `Результат парсинга по id "${this.taskId}"`
+                    this.popupMessage = resp.data
+                } else {
+                    this.popupTitle = 'Ошибка'
+                    this.popupMessage = 'При получении результата произошла ошибка'
+                }
+                this.popupVisible = true
             },
             onRowClick(row, column, event) {
                 //
+            },
+            popupClose() {
+                this.popupTitle = ''
+                this.popupMessage = ''
             }
-        },
-        async mounted() {
-            await this.getTableData()
         }
     })
 </script>

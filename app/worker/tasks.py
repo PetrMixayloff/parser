@@ -28,11 +28,12 @@ def parse_task(self, url: str):
         soup = BeautifulSoup(resp.text, 'lxml')
         root = soup.html
         result = dict()
-        result['html'] = len(root.contents)
+        result['html'] = {'count': 1, 'nested': len(root.contents)}
         for tag in root.recursiveChildGenerator():
             if tag.name is None:
                 continue
             if result.get(tag.name) is None:
-                result[tag.name] = 0
-            result[tag.name] += len(tag.contents)
+                result[tag.name] = {'count': 0, 'nested': 0}
+            result[tag.name]['count'] += 1
+            result[tag.name]['nested'] += len(tag.contents)
         update_result(db=session, result_id=task_id, result=json.dumps(result))
