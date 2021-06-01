@@ -1,6 +1,5 @@
-import secrets
-from typing import Any, Dict, List, Optional, Union
-from pydantic import AnyHttpUrl, BaseSettings, EmailStr, HttpUrl, PostgresDsn, validator
+from typing import Any, Dict, Optional
+from pydantic import BaseSettings, PostgresDsn, validator
 
 
 class Settings(BaseSettings):
